@@ -1,0 +1,32 @@
+Name: Irish Election Data
+
+Abbreviation: irish
+
+Extension: ED
+
+Series Number: 00001
+
+Path: election/irish
+
+Description: <p>The Dublin North, West, and Meath data sets contain a complete record of votes for two separate elections held in Dublin, Ireland in 2002.  The votes were posted <a href="http://www.dublincountyreturningofficer.com/">online</a> but have since been removed.</p> <p> The data sets are not complete, they contain many partial votes over the candidate set.  The North data set contains 43,942 votes over 12 candidates, the West data set contains 29,988 over 9 candidates, and the Meath set contains 64,081 votes over 14 candidates. </p> <p> The Meath data presented here was donated by Jeffrey O'Neill who runs the site <a href="http://www.openstv.org">OpenSTV.org</a>.</p>
+
+Required Citations: None
+
+Selected Studies: Budgeted Social Choice: From Consensus to Personalized Decision Making; Tyler Lu and Craig Boutilier; Proceedings of IJCAI; 2011
+
+description,status,file_name
+2002 Dublin North,Original,ED-00001-00000001.soi
+2002 Dublin North,Imbued,ED-00001-00000001.toc
+2002 Dublin North,Induced,ED-00001-00000001.pwg
+2002 Dublin North,Induced,ED-00001-00000001.wmg
+2002 Dublin North,Induced,ED-00001-00000001.tog
+2002 Dublin West,Original,ED-00001-00000002.soi
+2002 Dublin West,Imbued,ED-00001-00000002.toc
+2002 Dublin West,Induced,ED-00001-00000002.pwg
+2002 Dublin West,Induced,ED-00001-00000002.wmg
+2002 Dublin West,Induced,ED-00001-00000002.tog
+2002 Meath,Original,ED-00001-00000003.soi
+2002 Meath,Imbued,ED-00001-00000003.toc
+2002 Meath,Induced,ED-00001-00000003.pwg
+2002 Meath,Induced,ED-00001-00000003.wmg
+2002 Meath,Induced,ED-00001-00000003.tog

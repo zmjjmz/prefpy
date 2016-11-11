@@ -62,8 +62,8 @@ class MechanismSTV(Mechanism):
 		"""
 
 		rankMaps = []
-		counts = []
-		for preference in profile:
+		counts = [] #could use getPreferenceCounts
+		for preference in profile.preferences:
 			ranksMaps.append(preference.getReverseRankMap())
 			counts.append(preferences.count)
 
@@ -82,12 +82,20 @@ class MechanismSTV(Mechanism):
 
 		minVotes = min(totals.values())
 		losers = [key for key, value in totals.iteritems() if value == minVotes]
+		#tiebreaker needs to be added here so this returns a single value each time
 		return losers
 
-	# def STVWinner(self, profile):
+	def STVWinner(self, profile):
 		"""
 		Computes the winner(s) for STV voting
 
-		TODO: implement this so it continually calls computeRound loser until a winner
-		can be found
+		Returns a set of candidates in the original list of candidates minus the losers
 		"""
+		i =0
+		losers=[]
+		while (i < profile.numCands-1):
+			losers.extend(computeRoundLoser(profile, losers)) #use append for single value, extend for a list
+			i++
+		
+		cands = profile.preferences[0].getRankMap().keys()
+		return set(keys) - set(losers)

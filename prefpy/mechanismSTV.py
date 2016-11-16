@@ -1,24 +1,8 @@
 import math
 import io
+from mechanism import Mechanism
 from preference import Preference
 from profile import Profile
-'''
-if __name__ == "__main__":
-
-
-	#profile is not defined?
-	p = Profile()
-
-
-	# need to make filename first
-	#the designed file name is pretty confusing based on the read_election_file function
-
-	# Preflib Election Data Format
-
-	p.importPreflibFile("Basic Text Document.txt")
-	mP = MechanismPlurality()
-	scoreVect = mP.getScoringVector(p)
-'''
 
 class MechanismSTV(Mechanism):
 	"""
@@ -35,14 +19,12 @@ class MechanismSTV(Mechanism):
 
 	A few questions for the future:
 	- Should the final result rank whoever dropped first as the last place?
-	- Curious about line 97 in Mechanism.py:
-		if elecType != "soc" and elecType != "toc":
-            return False
 
 		Is this correct? It seems like there should be an 'or'
 	"""
 
-	#def __init__(self):
+	def __init__(self):
+		empty_list = []
 		# add something here...
 
 
@@ -64,25 +46,33 @@ class MechanismSTV(Mechanism):
 		rankMaps = []
 		counts = [] #could use getPreferenceCounts
 		for preference in profile.preferences:
-			ranksMaps.append(preference.getReverseRankMap())
-			counts.append(preferences.count)
+			rankMaps.append(preference.getReverseRankMap())
+			counts.append(preference.count)
 
 		if (len(rankMaps) != len(counts)):
 			print("something is wrong")
 
 		totals = dict()
 		for rank in rankMaps:
-			for i in range(1, len(rank)):
-				if (rank[i] not in droppedOut):
-					if (rank[i] in totals):
-						totals[rank[i]] += counts[i]
+            #  Ranks are listed starting from 1
+			for i in range(1, len(rank) + 1):
+				# print rank[i][0]
+				# new_rank = rank[i]
+				if (rank[i][0] not in droppedOut):
+					# print totals
+					# print counts[i]
+					# print totals[rank[i][0]], counts[i]
+					new_rank = rank[i][0]
+					if (rank[i][0] in totals):
+						totals[rank[i][0]] += counts[i]
 					else:
-						totals[rank[i]] = counts[i]
+						totals[rank[i][0]] = counts[i]
 					break
 
 		minVotes = min(totals.values())
 		losers = [key for key, value in totals.iteritems() if value == minVotes]
 		#tiebreaker needs to be added here so this returns a single value each time
+		print losers
 		return losers
 
 	def STVWinner(self, profile):
@@ -94,8 +84,23 @@ class MechanismSTV(Mechanism):
 		i =0
 		losers=[]
 		while (i < profile.numCands-1):
-			losers.extend(computeRoundLoser(profile, losers)) #use append for single value, extend for a list
-			i++
-		
+			losers.extend(self.computeRoundLoser(profile, losers)) #use append for single value, extend for a list
+			i += 1
+
+
 		cands = profile.preferences[0].getRankMap().keys()
-		return set(keys) - set(losers)
+		return set(cands) - set(losers)
+
+
+
+if __name__ == "__main__":
+
+	candMap = dict()
+	preferences = []
+	p = Profile(candMap, preferences)
+
+	p.importPreflibFile('ED-00001-00000001.toc')
+
+	m = MechanismSTV()
+
+	print m.STVWinner(p)

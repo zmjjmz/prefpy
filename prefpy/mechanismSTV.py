@@ -43,6 +43,9 @@ class MechanismSTV(Mechanism):
 		droppedOut - list of candidates who have already dropped out
 		"""
 
+		if(len(droppedOut) == len(profile.candMap) -1 ):
+			return 
+
 		rankMaps = []
 		counts = [] #could use getPreferenceCounts
 		for preference in profile.preferences:
@@ -70,10 +73,27 @@ class MechanismSTV(Mechanism):
 					break
 
 		minVotes = min(totals.values())
-		losers = [key for key, value in totals.iteritems() if value == minVotes]
+		
 		#tiebreaker needs to be added here so this returns a single value each time
-		print losers
-		return losers
+		count = 0
+		
+		#how to implement tiebreaker
+		# if any value matches the minVotes then run another iteration with the option removed.
+		# print out that value.
+		for key, value in totals.iteritems():
+
+			if value == minVotes:
+				losers = [key for key, value in totals.iteritems() if value == minVotes]
+				print losers  # in this print, i was printing out key and value... value seemed good 
+				# however key seemed incorrect.
+				droppedOut.extend(losers)
+				losers = self.computeRoundLoser(profile, droppedOut)
+				
+				#return droppedOut
+
+		return droppedOut	
+		#return
+		#return losers
 
 	def STVWinner(self, profile):
 		"""
@@ -83,11 +103,15 @@ class MechanismSTV(Mechanism):
 		"""
 		i =0
 		losers=[]
-		while (i < profile.numCands-1):
-			losers.extend(self.computeRoundLoser(profile, losers)) #use append for single value, extend for a list
-			i += 1
 
 
+
+		#while (i < profile.numCands-1):
+		#losers.extend(self.computeRoundLoser(profile, losers)) #use append for single value, extend for a list
+		#	i += 1
+
+
+		losers = self.computeRoundLoser(profile, losers)
 		cands = profile.preferences[0].getRankMap().keys()
 		return set(cands) - set(losers)
 

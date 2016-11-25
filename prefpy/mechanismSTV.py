@@ -8,19 +8,11 @@ class MechanismSTV(Mechanism):
 	"""
 	Goal is to return the winner of STV Voting (plurality each round, where loser
 	drops out every round until there is a winner).
-	Inherits from the general scoring mechanism (can change to positional if that
-	works better).
+	Inherits from the general scoring mechanism.
 
 	TODO:
-	- STV with no tiebreaker
-	- STV with ties broken alphabetically
-	- STV with all alternatives returned
 	- Ensure voting is valid (no partial orders)
-
-	A few questions for the future:
-	- Should the final result rank whoever dropped first as the last place?
-
-		Is this correct? It seems like there should be an 'or'
+	- Test results
 	"""
 
 	def __init__(self):
@@ -74,49 +66,49 @@ class MechanismSTV(Mechanism):
 
 		minVotes = min(totals.values())
 		
-		#tiebreaker needs to be added here so this returns a single value each time
-		count = 0
-		
-		#how to implement tiebreaker
-		# if any value matches the minVotes then run another iteration with the option removed.
-		# print out that value.
-		for key, value in totals.iteritems():
-
-			if value == minVotes:
-				losers = [key for key, value in totals.iteritems() if value == minVotes]
-				print losers  # in this print, i was printing out key and value... value seemed good 
-				# however key seemed incorrect.
-				droppedOut.extend(losers)
-				losers = self.computeRoundLoser(profile, droppedOut)
-				
-				#return droppedOut
-
-		return droppedOut	
-		#return
-		#return losers
+		losers = [key for key, value in totals.iteritems() if value == minVotes]
+		return losers
 
 	def STVWinner(self, profile):
 		"""
-		Computes the winner(s) for STV voting
+		Computes the winners (and losers) for STV voting
 
-		Returns a set of candidates in the original list of candidates minus the losers
+		Returns a list of lists of all candidates in winning order:
+			[[winner, 2nd winner, ... , loser], [winner, 2nd winner, ... , loser] ... ]
 		"""
 		i =0
+		#create 2-D list of losers and dropouts for possibility of ties
 		losers=[]
-
-
-
-		#while (i < profile.numCands-1):
-		#losers.extend(self.computeRoundLoser(profile, losers)) #use append for single value, extend for a list
-		#	i += 1
-
-
-		losers = self.computeRoundLoser(profile, losers)
+		losers.append([])
+		dropouts=[]
+		dropouts.append([])
+		while (i < profile.numCands-1):
+			j=0
+			loserLen = len(losers) 	#fix the length that we iterate by in a round
+			while (j < loserLen):
+				dropouts[j] = self.computeRoundLoser(profile, losers[j])
+				losers[j].append(dropouts[j][0])		#append first dropout to original loser list, then add more if necessary
+				k=1
+				while (k < len(dropouts[j])):
+					losers.append(list(losers[j]))
+					losers[-1].append(dropouts[j][k]) 	#append single dropout to newly made list in losers
+					dropouts.append([]) 				#maintain same length of dropouts list
+					k+=1
+				j+=1
+			i+=1
+		
+		# Now we should have a list of lists called 'losers' which contains all losers for different tiebreaks
+		
 		cands = profile.preferences[0].getRankMap().keys()
-		return set(cands) - set(losers)
+		i=0
+		while (i < len(losers)):
+			winner = set(cands) - set(losers[i])		#should be a set of a single element
+			losers.append(list(winner)[0])
+			losers.reverse()							#reorder the list so that the winner is at the front and loser at the back
 
-
-
+		return losers									#returns a list of lists with full rankings of candidates in STV
+		
+		
 if __name__ == "__main__":
 
 	candMap = dict()

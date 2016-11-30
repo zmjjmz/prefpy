@@ -36,7 +36,7 @@ class MechanismSTV(Mechanism):
 		"""
 
 		if(len(droppedOut) == len(profile.candMap) -1 ):
-			return 
+			return
 
 		rankMaps = []
 		counts = [] #could use getPreferenceCounts
@@ -65,7 +65,7 @@ class MechanismSTV(Mechanism):
 					break
 
 		minVotes = min(totals.values())
-		
+
 		losers = [key for key, value in totals.iteritems() if value == minVotes]
 		return losers
 
@@ -76,46 +76,38 @@ class MechanismSTV(Mechanism):
 		Returns a list of lists of all candidates in winning order:
 			[[winner, 2nd winner, ... , loser], [winner, 2nd winner, ... , loser] ... ]
 		"""
-		i =0
 		#create 2-D list of losers and dropouts for possibility of ties
-		losers=[]
-		losers.append([])
-		dropouts=[]
-		dropouts.append([])
-		while (i < profile.numCands-1):
-			j=0
-			loserLen = len(losers) 	#fix the length that we iterate by in a round
-			while (j < loserLen):
-				dropouts[j] = self.computeRoundLoser(profile, losers[j])
-				losers[j].append(dropouts[j][0])		#append first dropout to original loser list, then add more if necessary
-				k=1
-				while (k < len(dropouts[j])):
-					losers.append(list(losers[j]))
-					losers[-1].append(dropouts[j][k]) 	#append single dropout to newly made list in losers
-					dropouts.append([]) 				#maintain same length of dropouts list
-					k+=1
-				j+=1
-			i+=1
-		
-		# Now we should have a list of lists called 'losers' which contains all losers for different tiebreaks
-		
-		cands = profile.preferences[0].getRankMap().keys()
-		i=0
-		while (i < len(losers)):
-			winner = set(cands) - set(losers[i])		#should be a set of a single element
-			losers.append(list(winner)[0])
-			losers.reverse()							#reorder the list so that the winner is at the front and loser at the back
+		losers = [[]]
+		dropouts = [[]]
 
-		return losers									#returns a list of lists with full rankings of candidates in STV
-		
-		
+		for i in range(profile.numCands - 1):
+			for j in range(len(losers)):
+				dropouts[j] = self.computeRoundLoser(profile, losers[j])
+				print dropouts[j]
+				losers[j].append(dropouts[j][0])
+				for k in range(1, len(dropouts[j]), 1):
+					losers.append(list(losers[j]))
+					losers[-1].append(dropouts[j][k])
+					dropouts.append([])
+
+		# Now we should have a list of lists called 'losers' which contains all losers for different tiebreaks
+
+		cands = profile.preferences[0].getRankMap().keys()
+		for loser in losers:
+			winner = set(cands) - set(loser)
+			loser.append(list(winner)[0])
+			loser.reverse()
+
+		#returns a list of lists with full rankings of candidates in STV
+		return losers
+
 if __name__ == "__main__":
 
 	candMap = dict()
 	preferences = []
 	p = Profile(candMap, preferences)
 
-	p.importPreflibFile('ED-00001-00000001.toc')
+	p.importPreflibFile('ED-00018-00000004.toc')
 
 	m = MechanismSTV()
 

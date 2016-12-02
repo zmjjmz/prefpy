@@ -1,3 +1,4 @@
+import sys
 import prefpy
 from prefpy import preference
 from prefpy import profile
@@ -10,11 +11,22 @@ from prefpy.preference import Preference
 #=====================================================================================
 
 def main():
-	data = Profile({},[])
 
-	data.importPreflibFile("input0")
+	data = Profile({},[])
+	# filename = "input1"
+	filename = input("Enter name of election data file:   ").lower()
+	data.importPreflibFile(filename)
+	print("Imported file")
 
 	kemenyMech = MechanismKemeny()
+	print("Created KemenyMechanism obj")
+
+	kemWinner1 = kemenyMech.getWinners(data)
+	kemWinRank1 = kemenyMech.getWinningRankings()
+	print("W* = " + str(kemWinRank1) + ",  winner = " + str(kemWinner1))
+
+	# data.exportPreflibFile(filename + "-output")
+	# print("Created output file")
 
 	# myList = [(4, 'a', 'b'), (3, 'b', 'c'), (3, 'c', 'd'), (2, 'd', 'b'), (2, 'c', 'a'), (4, 'd', 'a')]
 	# #print(rankpairMech.getWinners(edges = myList))

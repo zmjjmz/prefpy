@@ -17,6 +17,7 @@ class MechanismKemeny(Mechanism):
 
 	def __init__(self):
 		self.maximizeCandScore = False
+		self.winningRankings = []
 
 	#=====================================================================================
 
@@ -43,7 +44,7 @@ class MechanismKemeny(Mechanism):
 			# For each pair of candidates in ranking, determine if edge/order in ranking
 			# is inconsistent with corresponding edge/order in the WMG of the profile
 			# Sum the weights of all such inconsistent edges
-			for cand1, cand2 in itertools.combinations(rankMap.keys(), 2):
+			for cand1, cand2 in itertools.combinations(ranking, 2):
 				# cand1 > cand2 in wmg
 				wmgOrd = 1 if (wmgMap[cand1][cand2] > 0) else 0
 				# cand1 > cand2 in ranking
@@ -52,17 +53,17 @@ class MechanismKemeny(Mechanism):
 					rankWeights[ranking] += abs(wmgMap[cand1][cand2])
 
 		bestScore = min(rankWeights.values())
-		winningRankings = []
+		self.winningRankings = []
 		for ranking in rankWeights.keys():
 			if rankWeights[ranking] == bestScore:
-				winningRankings.append(ranking)
+				self.winningRankings.append(ranking)
 
-		if len(winningRankings) > 1:
-			winRank = tiebreakRankings(winningRankings)
+		if len(self.winningRankings) > 1:
+			winRank = tiebreakRankings(self.winningRankings)
 		else:
-			winRank = winningRankings[0]
+			winRank = self.winningRankings[0]
 
-		return convertRankingToCandMap(winRank)
+		return self.convertRankingToCandMap(winRank)
 
 	#=====================================================================================
 
@@ -81,13 +82,21 @@ class MechanismKemeny(Mechanism):
 
 	#=====================================================================================
 
-	def tiebreakRankings(self, winningRankings):
+	def tiebreakRankings(self, wRankings):
 		"""
 		Returns a tuple that is the winning ranking.
 
-		:ivar List winningRankings: A list of tuples that represent preference rankings.
+		:ivar List wRankings: A list of tuples that represent preference rankings.
 		"""
-		return winningRankings[0]
+		return wRankings[0]
+
+	#=====================================================================================
+
+	def getWinningRankings(self):
+		"""
+		Returns a list of the winning rankings found from last winner calculation.
+		"""
+		return self.winningRankings
 
 #=====================================================================================
 #=====================================================================================

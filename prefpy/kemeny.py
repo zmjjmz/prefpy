@@ -11,7 +11,9 @@ from prefpy.mechanism import Mechanism
 
 class MechanismKemeny(Mechanism):
 	"""
-	The Kemeny mechanism.
+	The Kemeny mechanism. Calculates winning ranking(s)/candidate(s) based on the sums of
+	the weights of edges of a given profile's WMG that are inconsistent with those of the 
+	WMG for each possible ranking.
 	"""
 	#=====================================================================================
 
@@ -35,6 +37,25 @@ class MechanismKemeny(Mechanism):
 			print("ERROR: unsupported election type")
 			exit()
 
+		self.calcWinRanks(profile)
+
+		# handle tie/multiple winning rankings
+		if len(self.winningRankings) > 1:
+			winRank = tiebreakRankings(self.winningRankings)
+		else:
+			winRank = self.winningRankings[0]
+
+		return self.convertRankingToCandMap(winRank)
+
+	#=====================================================================================
+
+	def calcWinRanks(self, profile):
+		"""
+		Clears the self.winningRankings list, then fills it with any/all full rankings with
+		the lowest sum of edge weights inconsistent with the WMG of profile.
+
+		:ivar Profile profile: A Profile object that represents an election profile.
+		"""
 		rankWeights = dict()
 		wmgMap = profile.getWmg()
 		for ranking in itertools.permutations(wmgMap.keys()):
@@ -57,13 +78,6 @@ class MechanismKemeny(Mechanism):
 		for ranking in rankWeights.keys():
 			if rankWeights[ranking] == bestScore:
 				self.winningRankings.append(ranking)
-
-		if len(self.winningRankings) > 1:
-			winRank = tiebreakRankings(self.winningRankings)
-		else:
-			winRank = self.winningRankings[0]
-
-		return self.convertRankingToCandMap(winRank)
 
 	#=====================================================================================
 

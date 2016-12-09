@@ -2,7 +2,7 @@
 Authors: Tobe Ezekwenna, Sam Saks-Fithian, Aman Zargarpur
 '''
 
-from prefpy.kemeny import MechanismKemeny
+from prefpy.mechanism import Mechanism
 from gurobipy import *
 import numpy as np
 
@@ -23,34 +23,46 @@ def precedenceMatrix(preferences, counts):
 #=====================================================================================
 #=====================================================================================
 
-class MechanismKemenyILP(MechanismKemeny):
+class MechanismKemenyILP(Mechanism):
 	"""
 	The Kemeny mechanism. Calculates winning ranking(s)/candidate(s) based on Gurobi
-	optimization of ILP formula.
+	optimization of ILP formula:
+
+	Goal: minimize SUMMATION_a,b( Q_ab * X_ba + Q_ba * X_ab )
+		where Q is the precedence matrix formed from profile
+		i.e. Q_ab is the fraction of times a>b across all rankings in profile
+	Constraints:
+		X_ab in {0, 1}
+		X_ab + X_ba = 1, for ALL a,b
+		X_ab + X_bc + X_ca >= 1, for ALL a,b,c
+
 	"""
 	#=====================================================================================
 
 	def __init__(self):
-		super(MechanismKemenyILP, self).__init__()
 		self.maximizeCandScore = True
+		self.winningRanking = []
+		self.precMtx = []
+		self.gModel = None
 
 	#=====================================================================================
 
 	def getCandScoresMap(self, profile):
 		"""
-		Clears the self.winningRankings list, then fills it with any/all full rankings formed
-		from the optimization of the ILP description:
-
-		Goal: minimize SUMMATION_a,b( Q_ab * X_ba + Q_ba * X_ab )
-			where Q is the precedence matrix formed from profile
-			i.e. Q_ab is the fraction of times a>b across all rankings in profile
-		Constraints:
-			X_ab in {0, 1}
-			X_ab + X_ba = 1, for ALL a,b
-			X_ab + X_bc + X_ca >= 1, for ALL a,b,c
+		Returns a dictonary that associates the integer representation of each candidate 
+		with their score from the ILP optimization. The score for each candidate is the 
+		sum of all the binary variables that represent preference with respect to another 
+		candidate after optimization.
+		Sets/saves data variables for later use (self.winningRanking, self.precMtx, self.gModel)
 
 		:ivar Profile profile: A Profile object that represents an election profile.
 		"""
+		# Currently, we expect the profile to contain complete ordering over candidates.
+		elecType = profile.getElecType()
+		if elecType != "soc":
+			print("ERROR: unsupported election type")
+			exit()
+
 		try:
 			# Create a new model
 			m = Model("kemeny")
@@ -95,51 +107,35 @@ class MechanismKemenyILP(MechanismKemeny):
 				# print(v.varName, v.x)
 			# print('Obj:', m.objVal)
 
-			solution = self.convertOptBinVarsToCandMap(m)
+			candScoresMap = self.convertBinVarsToCandMap(m.getVars())
 
-			self.winningRankings = []
-			self.winningRankings = self.convertSolutionToRanking(solution)
-			
-			return solution
+			self.winningRanking = sorted(candScoresMap, key=candScoresMap.get, reverse=True)
+			self.precMtx = precedence
+			self.gModel = m
+
+			return candScoresMap
 
 		except GurobiError:
 			print('Gurobi Error reported')
 
 	#=====================================================================================
 
-	def convertOptBinVarsToCandMap(self, model):
+	def convertBinVarsToCandMap(self, varList):
 		"""
-		Returns a dictonary that associates the integer representation of each candidate with 
-		their place in the winning ranking.
+		Returns a dictonary that associates the integer representation of each candidate 
+		with their score from the ILP optimization. The score for each candidate is the 
+		sum of all the binary variables that represent preference with respect to another 
+		candidate after optimization.
 
-		:ivar Tuple ranking: A tuple representing the winning order ranking of the canditates.
+		:ivar List varList: A list of the binary variables set by the optimization of a Gurobi model.
 		"""
 		candScoresMap = dict()
-		for v in model.getVars():
+		for v in varList:
 			if(v.varName in candScoresMap.keys()):
 				candScoresMap[v.varName] += v.x
 			else:
 				candScoresMap.update({v.varName:v.x})
-
-			
 		return candScoresMap
-
-	def convertSolutionToRanking(self, model):
-		"""
-		Returns a list containing the ranking(s) formed from the values of the binary 
-		variables contained (and already optimized) by model.
-
-		:ivar Model model: A Gurobi Model object that has been set and optimized. 
-		"""
-		# ???????????
-
-		data = model.items()
-		sortedData = sorted(data, key=lambda tup: tup[1], reverse=True)
-		winningRanking = []
-		for i in range(len(sortedData)):
-			winningRanking.append(sortedData[i][0])
-
-		return winningRanking
 
 #=====================================================================================
 #=====================================================================================

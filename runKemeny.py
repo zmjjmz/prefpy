@@ -4,7 +4,7 @@ from prefpy import preference
 from prefpy import profile
 from prefpy import io
 
-from prefpy.kemeny import MechanismKemeny
+from prefpy.kemenyILP import MechanismKemenyILP
 from prefpy.profile import Profile
 from prefpy.preference import Preference
 
@@ -14,7 +14,7 @@ import numpy as np
 
 def preferenceMatrix(preferences, counts):
 	n, m = sum(counts), len(preferences[0])    # n preferences, m candidates
-	print("m is", m)
+	#print("m is", m)
 	Q = np.zeros((m,m))
 	for k in range(len(preferences)):
 		vote = preferences[k]
@@ -34,7 +34,7 @@ def main():
 	data.importPreflibFile(filename)
 	print("Imported file")
 
-	kemenyMech = MechanismKemeny()
+	kemenyMech = MechanismKemenyILP()
 	#print("Created KemenyMechanism obj")
 
 	kemWinner1 = kemenyMech.getWinners(data)
@@ -42,11 +42,11 @@ def main():
 	print("W* = " + str(kemWinRank1) + ",  winner = " + str(kemWinner1))
 
 
-	print(data.getPreferenceCounts())
-	print(data.getOrderVectors())
-	print(preferenceMatrix(data.getOrderVectors(), data.getPreferenceCounts()))
-	print(data.candMap)
-
+	#print(data.getPreferenceCounts())
+	#print(data.getOrderVectors())
+	#print(preferenceMatrix(data.getOrderVectors(), data.getPreferenceCounts()))
+	#print(data.candMap)
+	"""
 	try:
 		# Create a new model
 		m = Model("kemeny")
@@ -61,8 +61,8 @@ def main():
 			for j in range(i+1, len(keys)):
 
 				# Create variables
-				binaryMap[(i,j)] = m.addVar(vtype=GRB.BINARY, name=candMap[i+1]+candMap[j+1])
-				binaryMap[(j,i)] = m.addVar(vtype=GRB.BINARY, name=candMap[j+1]+candMap[i+1])
+				binaryMap[(i,j)] = m.addVar(vtype=GRB.BINARY, name=candMap[i+1])
+				binaryMap[(j,i)] = m.addVar(vtype=GRB.BINARY, name=candMap[j+1])
 				# Integrate new variables
 				m.update()
 
@@ -72,9 +72,11 @@ def main():
 				obj += precedence[j][i]*binaryMap[(i,j)] + precedence[i][j]*binaryMap[(j,i)]
 
 
-		for i in range(len(keys)-2):
-			for j in range(i+1, len(keys)-1):
-				for k in range(j+1, len(keys)):
+		for i in range(len(keys)):
+			for j in range(len(keys)):
+				for k in range(len(keys)):
+					if(i == j or j == k or i == k):
+						continue
 					m.addConstr(binaryMap[(i,j)] + binaryMap[(j,k)] + binaryMap[k, i] >= 1)
 
 		# Set objective
@@ -91,6 +93,8 @@ def main():
 
 	except GurobiError:
 		print('Error reported')
+
+	"""
 
 
 	# data.exportPreflibFile(filename + "-output")

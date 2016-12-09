@@ -4,13 +4,14 @@ Authors: Tobe Ezekwenna, Sam Saks-Fithian, Aman Zargarpur
 
 from prefpy.kemeny import MechanismKemeny
 from gurobipy import *
+import numpy as np
 
 #=====================================================================================
 #=====================================================================================
 
 def precedenceMatrix(preferences, counts):
 	n, m = sum(counts), len(preferences[0])    # n preferences, m candidates
-	print("m is", m)
+	#print("m is", m)
 	Q = np.zeros((m,m))
 	for k in range(len(preferences)):
 		vote = preferences[k]
@@ -31,10 +32,11 @@ class MechanismKemenyILP(MechanismKemeny):
 
 	def __init__(self):
 		super(MechanismKemenyILP, self).__init__()
+		self.maximizeCandScore = True
 
 	#=====================================================================================
 
-	def calcWinRanks(self, profile):
+	def getCandScoresMap(self, profile):
 		"""
 		Clears the self.winningRankings list, then fills it with any/all full rankings formed
 		from the optimization of the ILP description:
@@ -66,8 +68,8 @@ class MechanismKemenyILP(MechanismKemeny):
 				for j in range(i+1, len(keys)):
 
 					# Create variables (2, 3)
-					binaryMap[(i,j)] = m.addVar(vtype=GRB.BINARY, name=candMap[i+1]+candMap[j+1])
-					binaryMap[(j,i)] = m.addVar(vtype=GRB.BINARY, name=candMap[j+1]+candMap[i+1])
+					binaryMap[(i,j)] = m.addVar(vtype=GRB.BINARY, name=candMap[i+1])
+					binaryMap[(j,i)] = m.addVar(vtype=GRB.BINARY, name=candMap[j+1])
 					# Integrate new variables
 					m.update()
 
@@ -77,9 +79,11 @@ class MechanismKemenyILP(MechanismKemeny):
 					obj += precedence[j][i]*binaryMap[(i,j)] + precedence[i][j]*binaryMap[(j,i)]
 
 			# Add transitivity constraint: X_ab + X_bc + X_ca >= 1 (5)
-			for i in range(len(keys)-2):
-				for j in range(i+1, len(keys)-1):
-					for k in range(j+1, len(keys)):
+			for i in range(len(keys)):
+				for j in range(len(keys)):
+					for k in range(len(keys)):
+						if(i == j or j == k or i == k):
+							continue
 						m.addConstr(binaryMap[(i,j)] + binaryMap[(j,k)] + binaryMap[k, i] >= 1)
 
 			# Set objective
@@ -91,15 +95,36 @@ class MechanismKemenyILP(MechanismKemeny):
 				# print(v.varName, v.x)
 			# print('Obj:', m.objVal)
 
+			solution = self.convertOptBinVarsToCandMap(m)
+
 			self.winningRankings = []
-			self.winningRankings = self.convertOptBinVarsToRanking(m)
+			self.winningRankings = self.convertSolutionToRanking(solution)
+			
+			return solution
 
 		except GurobiError:
 			print('Gurobi Error reported')
 
 	#=====================================================================================
 
-	def convertOptBinVarsToRanking(self, model):
+	def convertOptBinVarsToCandMap(self, model):
+		"""
+		Returns a dictonary that associates the integer representation of each candidate with 
+		their place in the winning ranking.
+
+		:ivar Tuple ranking: A tuple representing the winning order ranking of the canditates.
+		"""
+		candScoresMap = dict()
+		for v in model.getVars():
+			if(v.varName in candScoresMap.keys()):
+				candScoresMap[v.varName] += v.x
+			else:
+				candScoresMap.update({v.varName:v.x})
+
+			
+		return candScoresMap
+
+	def convertSolutionToRanking(self, model):
 		"""
 		Returns a list containing the ranking(s) formed from the values of the binary 
 		variables contained (and already optimized) by model.
@@ -107,7 +132,14 @@ class MechanismKemenyILP(MechanismKemeny):
 		:ivar Model model: A Gurobi Model object that has been set and optimized. 
 		"""
 		# ???????????
-		pass
+
+		data = model.items()
+		sortedData = sorted(data, key=lambda tup: tup[1], reverse=True)
+		winningRanking = []
+		for i in range(len(sortedData)):
+			winningRanking.append(sortedData[i][0])
+
+		return winningRanking
 
 #=====================================================================================
 #=====================================================================================

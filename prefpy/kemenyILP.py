@@ -131,10 +131,10 @@ class MechanismKemenyILP(Mechanism):
 		"""
 		candScoresMap = dict()
 		for v in varList:
-			if(v.varName in candScoresMap.keys()):
+			if v.varName in candScoresMap.keys():
 				candScoresMap[v.varName] += v.x
 			else:
-				candScoresMap.update({v.varName:v.x})
+				candScoresMap[v.varName] = v.x
 		return candScoresMap
 
 #=====================================================================================

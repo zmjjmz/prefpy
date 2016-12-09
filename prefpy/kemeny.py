@@ -37,25 +37,6 @@ class MechanismKemeny(Mechanism):
 			print("ERROR: unsupported election type")
 			exit()
 
-		self.calcWinRanks(profile)
-
-		# handle tie/multiple winning rankings
-		if len(self.winningRankings) > 1:
-			winRank = tiebreakRankings(self.winningRankings)
-		else:
-			winRank = self.winningRankings[0]
-
-		return self.convertRankingToCandMap(winRank)
-
-	#=====================================================================================
-
-	def calcWinRanks(self, profile):
-		"""
-		Clears the self.winningRankings list, then fills it with any/all full rankings with
-		the lowest sum of edge weights inconsistent with the WMG of profile.
-
-		:ivar Profile profile: A Profile object that represents an election profile.
-		"""
 		rankWeights = dict()
 		wmgMap = profile.getWmg()
 		for ranking in itertools.permutations(wmgMap.keys()):
@@ -79,6 +60,14 @@ class MechanismKemeny(Mechanism):
 			if rankWeights[ranking] == bestScore:
 				self.winningRankings.append(ranking)
 
+		# handle tie/multiple winning rankings
+		if len(self.winningRankings) > 1:
+			winRank = tiebreakRankings(self.winningRankings)
+		else:
+			winRank = self.winningRankings[0]
+
+		return self.convertRankingToCandMap(winRank)
+
 	#=====================================================================================
 
 	def convertRankingToCandMap(self, ranking):
@@ -98,19 +87,11 @@ class MechanismKemeny(Mechanism):
 
 	def tiebreakRankings(self, wRankings):
 		"""
-		Returns a tuple that is the winning ranking.
+		Returns a tuple that is the single winning ranking.
 
 		:ivar List wRankings: A list of tuples that represent preference rankings.
 		"""
 		return wRankings[0]
-
-	#=====================================================================================
-
-	def getWinningRankings(self):
-		"""
-		Returns a list of the winning rankings found from last winner calculation.
-		"""
-		return self.winningRankings
 
 #=====================================================================================
 #=====================================================================================

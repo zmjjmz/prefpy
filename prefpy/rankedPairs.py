@@ -165,8 +165,21 @@ class RankedPairs(Mechanism):
 		DG.add_nodes_from(nodeSet)
 		return DG
 
+
+	def getRanking(self, profile):
+
+		raise NotImplementedError
+
 	def getWinners(self, prof=None, edgePrefList=None):
-	#primary method to calculate multiple winners
+		"""
+		prof Profile
+		edgePrefList- list of tuples representing a preference over wmg edges
+		primary method to calculate multiple winners
+		returns the set of winning nodes and then the linear orders justifying each
+	    winner in the form of networkx objects
+
+		"""
+
 		edges = self.getSortedEdges(prof)
 		
 		DG=self.initDG(edges)#get the networkx Directed Graph from the set of edges
@@ -185,7 +198,7 @@ class RankedPairs(Mechanism):
 				winners += getWinningNodes(graph.DG) #add the nodes returned by the getWinningNodes call
 			else:
 				graphs=tmpNextEdgeList+graphs
-		print(len(doneList)) #debug statement to see how many graphs needed to be computed
+		#print(len(doneList)) #debug statement to see how many graphs needed to be computed
 		'''
 		#loop to output each completed graph
 		for winner in doneList:

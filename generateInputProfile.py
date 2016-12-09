@@ -1,5 +1,6 @@
 import sys
 import random
+import math
 import itertools
 import prefpy
 from prefpy import preference
@@ -22,17 +23,10 @@ def main(argv):
 
 	preferencesList = []
 
-	'''TODO: pick indices first, only store a certain number of rankings at any one time and 
-			delete old ones until reaching the desired index'''
-	allRankingOptions = []
-	for ranking in itertools.permutations(candMap.keys()):
-		allRankingOptions.append(ranking)
+	ranksWithNums = pickRankings(candMap, numUniqueRankings)
 
-	for i in range(numUniqueRankings):
-		rankNum = random.randint(0, len(allRankingOptions))
-		ranking = allRankingOptions[rankNum]
+	for ranking in ranksWithNums.values():
 		wmgMap = genWmgMapFromRankMap( convertRankingToRankMap(ranking) )
-
 		voteCount = random.randint(0, maxVotesPerRanking)
 
 		newPref = Preference(wmgMap,voteCount)
@@ -41,6 +35,29 @@ def main(argv):
 	generatedProfile = Profile(candMap, preferencesList)
 	generatedProfile.exportPreflibFile(filename)
 	print("Generated file '" + filename + "'")
+
+#=====================================================================================
+
+def pickRankings(candMap, numUniqueRankings):
+	numPosRankings = math.factorial(len(candMap.keys()))
+	
+	ranksWithNums = dict()
+	# pick the random indices for the rankings to be chosen
+	while len(ranksWithNums.keys()) < numUniqueRankings:
+		rankNum = random.randint(0, numPosRankings)
+		ranksWithNums[rankNum] = 0
+
+	numFound = 0
+	rankNum = 0
+	for ranking in itertools.permutations(candMap.keys()):
+		if rankNum in ranksWithNums.keys():
+			ranksWithNums[rankNum] = ranking
+			numFound += 1
+		if numFound >= numUniqueRankings:
+			break
+		rankNum += 1
+
+	return ranksWithNums
 
 #=====================================================================================
 

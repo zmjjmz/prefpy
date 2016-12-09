@@ -22,6 +22,8 @@ def main(argv):
 
 	preferencesList = []
 
+	'''TODO: pick indices first, only store a certain number of rankings at any one time and 
+			delete old ones until reaching the desired index'''
 	allRankingOptions = []
 	for ranking in itertools.permutations(candMap.keys()):
 		allRankingOptions.append(ranking)

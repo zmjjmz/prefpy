@@ -18,6 +18,19 @@ def convertCandIntsToNames(candsToConvert, candMap):
 
 #=====================================================================================
 
+def convertDictionaryCandIntsToNames(candDictToConvert, candMap):
+	convertedCands = dict()
+	for candInt, val in candDictToConvert.items():
+		candStr = candMap[candInt]
+		if isinstance(val, dict):
+			val = convertDictionaryCandIntsToNames(val, candMap)
+		convertedCands[candStr] = val
+	# print("ToConvert: ", getDictString(candDictToConvert))
+	# print("Converted: ", getDictString(convertedCands))
+	return convertedCands
+
+#=====================================================================================
+
 def getRankingString(ranking):
 	rankStr = ""
 	for i, cand in enumerate(ranking):
@@ -28,13 +41,13 @@ def getRankingString(ranking):
 
 #=====================================================================================
 
-def getDictString(dict):
+def getDictString(dictionary):
 	dictStr = ""
 	line = "{s}{key}: {val}{e}"
-	for i, k in enumerate(dict.keys()):
+	for i, k in enumerate(dictionary.keys()):
 		start = "\n{ " if (i == 0) else "  "
-		end = "  }" if (i == len(dict)-1) else ",\n"
-		dictStr += line.format(s=start, key=k, val=dict[k], e=end)
+		end = "  }" if (i == len(dictionary)-1) else ",\n"
+		dictStr += line.format(s=start, key=k, val=dictionary[k], e=end)
 	return dictStr
 
 #=====================================================================================
@@ -42,4 +55,3 @@ def getDictString(dict):
 
 
 
-	

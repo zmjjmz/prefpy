@@ -62,7 +62,7 @@ class MechanismKemeny(Mechanism):
 
 		# handle tie/multiple winning rankings
 		if len(self.winningRankings) > 1:
-			winRank = tiebreakRankings(self.winningRankings)
+			winRank = self.tiebreakRankings(self.winningRankings)
 		else:
 			winRank = self.winningRankings[0]
 

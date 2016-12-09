@@ -41,7 +41,7 @@ class MechanismKemenyILP(Mechanism):
 
 	def __init__(self):
 		self.maximizeCandScore = True
-		self.winningRanking = []
+		self.winningRankings = []
 		self.precMtx = []
 		self.gModel = None
 
@@ -109,7 +109,7 @@ class MechanismKemenyILP(Mechanism):
 
 			candScoresMap = self.convertBinVarsToCandMap(m.getVars())
 
-			self.winningRanking = sorted(candScoresMap, key=candScoresMap.get, reverse=True)
+			self.winningRankings = sorted(candScoresMap, key=candScoresMap.get, reverse=True)
 			self.precMtx = precedence
 			self.gModel = m
 

@@ -12,11 +12,18 @@ from outputFormatting import *
 #=====================================================================================
 
 def main(argv):
-	if len(argv) > 1:
-		filename = argv[1]
-	else:
+	if len(argv) == 1:
 		filename = input("Enter name of election data file:   ").lower()
+		solveFile(filename)
+	else:
+		for i in range(1, len(argv)):
+			print("============================{}============================".format(argv[i]))
+			solveFile(argv[i])
+			print("------------------------end of {}------------------------\n".format(argv[i]))
 
+#=====================================================================================
+
+def solveFile(filename):
 	data = Profile({},[])
 	data.importPreflibFile(filename)
 	print("Imported file '" + filename + "'")
@@ -45,7 +52,7 @@ def main(argv):
 	kemWinnersNames = convertCandIntsToNames(kemWinners, data.candMap)
 
 	# winning ranking(s)
-	kemWinRanksBase = kemenyMech.winningRanking
+	kemWinRanksBase = kemenyMech.winningRankings
 	kemWinRanksNames = convertCandIntsToNames(kemWinRanksBase, data.candMap)
 
 	# winning ranking(s) formatted as strings in the form "a > b > c"
@@ -53,7 +60,7 @@ def main(argv):
 	for ranking in kemWinRanksNames:
 		kemWinRankStrs.append( getRankingString(ranking) )
 
-	winnerPrint = "W* = {ranking},  winner(s) = {w}"
+	winnerPrint = "W* = {ranking}\nWinner(s) = {w}"
 	print( winnerPrint.format(ranking=kemWinRankStrs, w=kemWinnersNames) )
 
 #=====================================================================================

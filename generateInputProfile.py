@@ -39,9 +39,24 @@ def main(argv):
 #=====================================================================================
 
 def pickRankings(candMap, numUniqueRankings):
-	numPosRankings = math.factorial(len(candMap.keys()))
 	
-	ranksWithNums = dict()
+	# ranksWithNums = dict()
+	# i = 0
+	# while len(ranksWithNums.keys()) < numUniqueRankings and i < 6:
+	# 	ranking = []
+	# 	candsCopy = list(candMap.keys())
+	# 	while len(candsCopy) > 0:
+	# 		rankNum = random.randint(0, len(candsCopy)-1)
+	# 		ranking.append(candsCopy[rankNum])
+	# 		del candsCopy[rankNum]
+	# 	print("ranking: ", ranking)
+	# 	print("ranksWithNums: ", ranksWithNums)
+	# 	if tuple(ranking) not in ranksWithNums.keys():
+	# 		ranksWithNums[tuple(ranking)] = i
+	# 	i += 1
+
+
+	numPosRankings = math.factorial(len(candMap.keys()))
 	# pick the random indices for the rankings to be chosen
 	while len(ranksWithNums.keys()) < numUniqueRankings:
 		rankNum = random.randint(0, numPosRankings)

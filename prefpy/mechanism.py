@@ -5,8 +5,8 @@ import io
 import math
 
 import itertools
-from .preference import Preference
-from .profile import Profile
+from preference import Preference
+from profile import Profile
 
 class Mechanism():
     """
@@ -22,19 +22,19 @@ class Mechanism():
         """
         Returns a list of all winning candidates given an election profile. This function assumes
         that getCandScoresMap(profile) is implemented for the child Mechanism class.
-        
+
         :ivar Profile profile: A Profile object that represents an election profile.
         """
-        
-        candScores = self.getCandScoresMap(profile) 
 
-        # Check whether the winning candidate is the candidate that maximizes the score or 
+        candScores = self.getCandScoresMap(profile)
+
+        # Check whether the winning candidate is the candidate that maximizes the score or
         # minimizes it.
         if self.maximizeCandScore == True:
             bestScore = max(candScores.values())
         else:
             bestScore = min(candScores.values())
-        
+
         # Create a list of all candidates with the winning score and return it.
         winners = []
         for cand in candScores.keys():
@@ -44,28 +44,28 @@ class Mechanism():
 
     def getRanking(self, profile):
         """
-        Returns a list of lists that orders all candidates in tiers from best to worst given an 
-        election profile. This function assumes that getCandScoresMap(profile) is implemented for 
+        Returns a list of lists that orders all candidates in tiers from best to worst given an
+        election profile. This function assumes that getCandScoresMap(profile) is implemented for
         the child Mechanism class.
 
         :ivar Profile profile: A Profile object that represents an election profile.
         """
 
         # We generate a map that associates each score with the candidates that have that acore.
-        candScoresMap = self.getCandScoresMap(profile) 
+        candScoresMap = self.getCandScoresMap(profile)
         reverseCandScoresMap = dict()
         for key, value in candScoresMap.items():
             if value not in reverseCandScoresMap.keys():
                 reverseCandScoresMap[value] = [key]
-            else:   
+            else:
                 reverseCandScoresMap[value].append(key)
-        
+
         # We sort the scores by either decreasing order or increasing order.
         if self.maximizeCandScore == True:
             sortedCandScores = sorted(reverseCandScoresMap.keys(), reverse=True)
         else:
             sortedCandScores = sorted(reverseCandScoresMap.keys())
-        
+
         # We put the candidates into our ranking based on the order in which their score appears
         ranking = []
         for candScore in sortedCandScores:
@@ -73,7 +73,7 @@ class Mechanism():
             for cand in reverseCandScoresMap[candScore]:
                 currRanking.append(cand)
             ranking.append(currRanking)
-        
+
         # Right now we return a list that contains the ranking list. This is for future extensions.
         results = []
         results.append(ranking)
@@ -82,7 +82,7 @@ class Mechanism():
 
 class MechanismPosScoring(Mechanism):
     """
-    The positional scoring mechanism. This class is the parent class for several mechanisms. This 
+    The positional scoring mechanism. This class is the parent class for several mechanisms. This
     can also be constructed directly. All child classes are expected to implement the
     getScoringVector() method.
 
@@ -106,18 +106,18 @@ class MechanismPosScoring(Mechanism):
 
         :ivar Profile profile: A Profile object that represents an election profile.
         """
-        
+
         # Check to make sure that the scoring vector contains a score for every possible rank in a
         # ranking.
         if len(self.scoringVector) != profile.numCands:
             print("ERROR: scoring vector is not the correct length")
             exit()
-        
+
         return self.scoringVector
 
     def getCandScoresMap(self, profile):
         """
-        Returns a dictonary that associates the integer representation of each candidate with the 
+        Returns a dictonary that associates the integer representation of each candidate with the
         score they recieved in the profile.
 
         :ivar Profile profile: A Profile object that represents an election profile.
@@ -144,7 +144,7 @@ class MechanismPosScoring(Mechanism):
             rankMapCount = rankMapCounts[i]
             for cand in rankMap.keys():
                 candScoresMap[cand] += scoringVector[rankMap[cand]-1]*rankMapCount
-        
+
         return candScoresMap
 
     def getMov(self, profile):
@@ -167,7 +167,7 @@ class MechanismPlurality(MechanismPosScoring):
 
     def getScoringVector(self, profile):
         """
-        Returns the scoring vector [1,0,0,...,0]. This function is called by getCandScoresMap() 
+        Returns the scoring vector [1,0,0,...,0]. This function is called by getCandScoresMap()
         which is implemented in the parent class.
 
         :ivar Profile profile: A Profile object that represents an election profile.
@@ -189,7 +189,7 @@ class MechanismVeto(MechanismPosScoring):
 
     def getScoringVector(self, profile):
         """
-        Returns the scoring vector [1,1,1,...,0]. This function is called by getCandScoresMap() 
+        Returns the scoring vector [1,1,1,...,0]. This function is called by getCandScoresMap()
         which is implemented in the parent class.
 
         :ivar Profile profile: A Profile object that represents an election profile.
@@ -240,7 +240,7 @@ class MechanismBorda(MechanismPosScoring):
 
     def getScoringVector(self, profile):
         """
-        Returns the scoring vector [m-1,m-2,m-3,...,0] where m is the number of candidates in the 
+        Returns the scoring vector [m-1,m-2,m-3,...,0] where m is the number of candidates in the
         election profile. This function is called by getCandScoresMap() which is implemented in the
         parent class.
 
@@ -257,23 +257,23 @@ class MechanismBorda(MechanismPosScoring):
 class MechanismKApproval(MechanismPosScoring):
     """
     The top-k mechanism. This inherits from the positional scoring mechanism.
-    
-    :ivar int k: The number of positions that recieve a score of 1. 
+
+    :ivar int k: The number of positions that recieve a score of 1.
     """
 
     def __init__(self, k):
         self.maximizeCandScore = True
         self.k = k
-    
+
     def getScoringVector(self, profile):
         """
-        Returns a scoring vector such that the first k candidates recieve 1 point and all others 
+        Returns a scoring vector such that the first k candidates recieve 1 point and all others
         recive 0  This function is called by getCandScoresMap() which is implemented in the parent
         class.
 
         :ivar Profile profile: A Profile object that represents an election profile.
         """
-        
+
         if self.k > profile.numCands:
             self.k = profile.numCands
 
@@ -294,7 +294,7 @@ class MechanismSimplifiedBucklin(Mechanism):
 
     def getCandScoresMap(self, profile):
         """
-        Returns a dictionary that associates integer representations of each candidate with their 
+        Returns a dictionary that associates integer representations of each candidate with their
         Bucklin score.
 
         :ivar Profile profile: A Profile object that represents an election profile.
@@ -305,7 +305,7 @@ class MechanismSimplifiedBucklin(Mechanism):
         if elecType != "soc" and elecType != "toc":
             print("ERROR: unsupported profile type")
             exit()
-        
+
         bucklinScores = dict()
         rankMaps = profile.getRankMaps()
         preferenceCounts = profile.getPreferenceCounts()
@@ -317,7 +317,7 @@ class MechanismSimplifiedBucklin(Mechanism):
             # We increase t in increments of 1 until we find t such that the candidate is ranked in the
             # first t positions in at least half the votes.
             for t in range(1, profile.numCands+1):
-                for i in range(0, len(rankMaps)):        
+                for i in range(0, len(rankMaps)):
                     if (rankMaps[i][cand] == t):
                         numTimesRanked += preferenceCounts[i]
                 if numTimesRanked >= math.ceil(float(profile.numVoters)/2):
@@ -347,7 +347,7 @@ class MechanismCopeland(Mechanism):
 
     def getCandScoresMap(self, profile):
         """
-        Returns a dictionary that associates integer representations of each candidate with their 
+        Returns a dictionary that associates integer representations of each candidate with their
         Copeland score.
 
         :ivar Profile profile: A Profile object that represents an election profile.
@@ -375,7 +375,7 @@ class MechanismCopeland(Mechanism):
                     copelandScores[cand1] += 1.0
                 elif wmgMap[cand1][cand2] < 0:
                     copelandScores[cand2] += 1.0
-            
+
                 #If a pair of candidates is tied, we add alpha to their score for each vote.
                 else:
                     copelandScores[cand1] += self.alpha
@@ -393,7 +393,7 @@ class MechanismMaximin(Mechanism):
 
     def getCandScoresMap(self, profile):
         """
-        Returns a dictionary that associates integer representations of each candidate with their 
+        Returns a dictionary that associates integer representations of each candidate with their
         maximin score.
 
         :ivar Profile profile: A Profile object that represents an election profile.
@@ -412,7 +412,7 @@ class MechanismMaximin(Mechanism):
         maximinScores = dict()
         for cand in wmg.keys():
             maximinScores[cand] = float("inf")
- 
+
         # For each pair of candidates, calculate the number of times each beats the other.
         for cand1, cand2 in itertools.combinations(wmg.keys(), 2):
             if cand2 in wmg[cand1].keys():
@@ -431,7 +431,7 @@ class MechanismSchulze(Mechanism):
 
     def computeStrongestPaths(self, profile, pairwisePreferences):
         """
-        Returns a two-dimensional dictionary that associates every pair of candidates, cand1 and 
+        Returns a two-dimensional dictionary that associates every pair of candidates, cand1 and
         cand2, with the strongest path from cand1 to cand2.
 
         :ivar Profile profile: A Profile object that represents an election profile.
@@ -469,7 +469,7 @@ class MechanismSchulze(Mechanism):
 
     def computePairwisePreferences(self, profile):
         """
-        Returns a two-dimensional dictionary that associates every pair of candidates, cand1 and 
+        Returns a two-dimensional dictionary that associates every pair of candidates, cand1 and
         cand2, with number of voters who prefer cand1 to cand2.
 
         :ivar Profile profile: A Profile object that represents an election profile.
@@ -481,7 +481,7 @@ class MechanismSchulze(Mechanism):
         pairwisePreferences = dict()
         for cand in cands:
             pairwisePreferences[cand] = dict()
-        for cand1 in cands:    
+        for cand1 in cands:
             for cand2 in cands:
                 if cand1 != cand2:
                     pairwisePreferences[cand1][cand2] = 0
@@ -489,7 +489,7 @@ class MechanismSchulze(Mechanism):
         for preference in profile.preferences:
             wmgMap = preference.wmgMap
             for cand1, cand2 in itertools.combinations(cands, 2):
-                
+
                 # If either candidate was unranked, we assume that they are lower ranked than all
                 # ranked candidates.
                 if cand1 not in wmgMap.keys():
@@ -541,7 +541,7 @@ def getKendallTauScore(myResponse, otherResponse):
     kt = 0
     list1 = myResponse.values()
     list2 = otherResponse.values()
-    
+
     if len(list1) <= 1:
         return kt
 
